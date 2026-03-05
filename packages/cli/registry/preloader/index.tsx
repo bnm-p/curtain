@@ -53,7 +53,11 @@ export const Preloader: React.FC<PreloaderProps> = ({ title, caption, render }) 
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(true)
 
-  const { notifyPreloaderDone } = useMotionContext()
+  const { registerPreloader, notifyPreloaderDone } = useMotionContext()
+
+  // Block page reveal immediately — must run before any effects so that
+  // onPreloaderReady in page-transition doesn't fire before we're ready.
+  registerPreloader()
 
   useEffect(() => setMounted(true), [])
 

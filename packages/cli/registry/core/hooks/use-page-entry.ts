@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import type { AnimationFn } from "../context"
+import type { AnimationFn, FreeAnimationFn, TimelineAnimationFn } from "../context"
 import { useMotionContext } from "../context"
 
 /**
@@ -31,10 +31,18 @@ export function usePageEntry(fn: AnimationFn) {
   const fnRef = useRef<AnimationFn>(fn)
   fnRef.current = fn
 
+  // Capture the type once at render time. Rest-arg wrappers have .length===0,
+  // so we must detect the intent here and wrap with a correctly-lengthed fn
+  // so that page-transition.tsx's fn.length>0 check works correctly.
+  const isTimeline = fn.length > 0
+
   useEffect(() => {
-    setEntryAnimations((...args: Parameters<AnimationFn>) =>
-      // @ts-expect-error: args spread works for both overloads
-      fnRef.current(...args),
-    )
-  }, [setEntryAnimations])
+    if (isTimeline) {
+      setEntryAnimations((tl: gsap.core.Timeline) =>
+        (fnRef.current as TimelineAnimationFn)(tl),
+      )
+    } else {
+      setEntryAnimations(() => (fnRef.current as FreeAnimationFn)())
+    }
+  }, [setEntryAnimations, isTimeline])
 }

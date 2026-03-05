@@ -9,7 +9,7 @@ import type { TransitionDef } from "./types"
 export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter()
   const pathname = usePathname()
-  const { config, getEntryAnimations, onPreloaderReady } = useMotionContext()
+  const { config, getEntryAnimations, getLeaveAnimations, onPreloaderReady } = useMotionContext()
 
   const {
     selector,
@@ -122,30 +122,24 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
       const fn = getEntryAnimations()
       const wrapper = getWrapper(content)
 
+      // Reveal the wrapper immediately so the clip entry animation is visible.
+      gsap.set(wrapper, { opacity: 1 })
+
       if (fn) {
         if (fn.length > 0) {
-          // TimelineAnimationFn: fn runs synchronously, adding tweens to pageTl.
-          // Reveal wrapper after fn so any initial-state sets in fn fire first.
+          // TimelineAnimationFn: scope selectors to content so they don't
+          // accidentally target elements in the ghost clone.
           const pageTl = gsap.timeline()
-          ;(fn as TimelineAnimationFn)(pageTl)
+          gsap.context(() => (fn as TimelineAnimationFn)(pageTl), content)
           entryTl.add(pageTl, `<${pageAnimDelay}`)
-          entryTl.call(() => gsap.set(wrapper, { opacity: 1 }))
         } else {
-          // FreeAnimationFn: fn runs on the first GSAP tick.
-          // Reveal wrapper after fn so any initial setup (e.g. SplitText)
-          // happens before the wrapper becomes visible.
+          // FreeAnimationFn: runs freely after the transition.
           entryTl.call(
-            () => {
-              ;(fn as FreeAnimationFn)()
-              gsap.set(wrapper, { opacity: 1 })
-            },
+            () => (fn as FreeAnimationFn)(),
             [],
             `<${pageAnimDelay}`,
           )
         }
-      } else {
-        // No page animation registered — just reveal the wrapper.
-        gsap.set(wrapper, { opacity: 1 })
       }
     }
 
@@ -231,6 +225,20 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
           }
         })
         exitTweenRef.current = exitTween
+
+        // Run leave animations scoped to the ghost so selectors only target
+        // elements within the cloned page, not the incoming page.
+        const leaveFn = getLeaveAnimations()
+        if (leaveFn) {
+          const leaveTl = gsap.timeline()
+          gsap.context(() => {
+            if (leaveFn.length > 0) {
+              ;(leaveFn as TimelineAnimationFn)(leaveTl)
+            } else {
+              ;(leaveFn as FreeAnimationFn)()
+            }
+          }, ghost)
+        }
       }
 
       // Navigate immediately — exit and entry run in parallel.

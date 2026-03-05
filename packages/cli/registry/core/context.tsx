@@ -17,6 +17,9 @@ interface MotionContextType {
   config: Required<MotionConfig>
   setEntryAnimations: (fn: AnimationFn) => void
   getEntryAnimations: () => AnimationFn | null
+  setLeaveAnimations: (fn: AnimationFn | null) => void
+  getLeaveAnimations: () => AnimationFn | null
+  registerPreloader: () => void
   notifyPreloaderDone: () => void
   onPreloaderReady: (cb: () => void) => void
 }
@@ -32,7 +35,11 @@ export const MotionContextProvider: FC<MotionContextProviderProps> = ({
   children,
 }) => {
   const entryAnimations = useRef<AnimationFn | null>(null)
-  const preloaderDone = useRef(false)
+  const leaveAnimations = useRef<AnimationFn | null>(null)
+  // Defaults to true so pages reveal immediately when no Preloader is used.
+  // The Preloader calls registerPreloader() on mount to flip this to false,
+  // then notifyPreloaderDone() when its animation completes.
+  const preloaderDone = useRef(true)
   const preloaderQueue = useRef<Array<() => void>>([])
 
   return (
@@ -43,6 +50,13 @@ export const MotionContextProvider: FC<MotionContextProviderProps> = ({
           entryAnimations.current = fn
         },
         getEntryAnimations: () => entryAnimations.current,
+        setLeaveAnimations: (fn) => {
+          leaveAnimations.current = fn
+        },
+        getLeaveAnimations: () => leaveAnimations.current,
+        registerPreloader: () => {
+          preloaderDone.current = false
+        },
         notifyPreloaderDone: () => {
           preloaderDone.current = true
           for (const cb of preloaderQueue.current) cb()
