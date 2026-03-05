@@ -17,6 +17,7 @@ const CORE_FILES: Array<{ src: string; dest: string }> = [
   { src: "core/config.ts", dest: "config.ts" },
   { src: "core/index.ts", dest: "index.ts" },
   { src: "core/hooks/use-page-entry.ts", dest: "hooks/use-page-entry.ts" },
+  { src: "core/hooks/use-page-leave.ts", dest: "hooks/use-page-leave.ts" },
   { src: "transitions/default.ts", dest: "transitions/default.ts" },
 ]
 
