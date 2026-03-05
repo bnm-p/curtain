@@ -1,0 +1,179 @@
+---
+title: usePageEntry
+description: Register entry animations for a page's elements.
+---
+
+import { Callout } from 'nextra/components'
+
+# `usePageEntry`
+
+Registers element-level entry animations for the current page. The animations run after the page's clip-in transition starts, coordinated with the transition timeline via `pageAnimDelay`.
+
+```ts
+import { usePageEntry } from '@/motion'
+```
+
+---
+
+## Signatures
+
+### Timeline function (recommended)
+
+```ts
+usePageEntry((tl: gsap.core.Timeline) => void)
+```
+
+The callback receives a GSAP timeline. Add tweens to `tl` — they will be inserted into the page's entry timeline at the `pageAnimDelay` offset from the clip start.
+
+```tsx
+"use client"
+
+import { usePageEntry } from '@/motion'
+
+export default function AboutPage() {
+  usePageEntry((tl) => {
+    tl.from('.heading', { y: 40, opacity: 0, duration: 0.6, ease: 'power3.out' })
+    tl.from('.body-text', { y: 20, opacity: 0, duration: 0.5 }, '<0.15')
+    tl.from('.image', { scale: 1.05, opacity: 0, duration: 0.8 }, '<0.1')
+  })
+
+  return (
+    <div>
+      <h1 className="heading">About</h1>
+      <p className="body-text">...</p>
+      <img className="image" src="..." alt="" />
+    </div>
+  )
+}
+```
+
+### Free function
+
+```ts
+usePageEntry(() => void)
+```
+
+A zero-argument callback gives you free control — useful for cases where you need to set up your own GSAP timeline, use ScrollTrigger, run a SplitText animation, etc. Runs at the `pageAnimDelay` offset via a `tl.call()`.
+
+```tsx
+"use client"
+
+import { gsap } from 'gsap'
+import { usePageEntry } from '@/motion'
+
+export default function WorkPage() {
+  usePageEntry(() => {
+    const tl = gsap.timeline()
+    tl.from('.card', {
+      y: 60,
+      opacity: 0,
+      duration: 0.5,
+      stagger: 0.08,
+      ease: 'power2.out',
+    })
+  })
+
+  return (
+    <ul>
+      {projects.map((p) => (
+        <li key={p.id} className="card">{p.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+---
+
+## Selector scoping
+
+All string-based GSAP selectors inside a timeline callback (e.g. `'.heading'`) are automatically **scoped to the `page-content` element**. This means they only target elements within the current page's content — not in the ghost clone of the leaving page.
+
+```tsx
+usePageEntry((tl) => {
+  // Only targets .title inside .page-content, not anywhere else in the document
+  tl.from('.title', { y: 40, opacity: 0, duration: 0.6 })
+})
+```
+
+<Callout type="info">
+  Scoping uses `gsap.context(fn, contentElement)` internally. This does **not** apply to free function callbacks — if you create your own GSAP tweens in a free function, use element references or scoped queries manually.
+</Callout>
+
+---
+
+## Timing
+
+`usePageEntry` animations are added to the entry timeline at `<pageAnimDelay` from the clip-in start. With the default `pageAnimDelay: 0.4`, this means:
+
+- `t=0` — clip-in starts (content reveals from `inset(100svh)` downward)
+- `t=0.4s` — `usePageEntry` timeline begins
+- `t=1.2s` — clip-in completes (content fully visible)
+
+This allows the clip to partly open before element-level animations begin, creating a sense of depth.
+
+You can adjust this with `pageAnimDelay` in your [config](/configuration).
+
+---
+
+## Per-page registration
+
+`usePageEntry` is called inside a page component. Each page registers its own entry animation. When you navigate to a new page, the new page's `usePageEntry` callback replaces the previous one.
+
+```tsx filename="app/about/page.tsx"
+"use client"
+
+import { usePageEntry } from '@/motion'
+
+export default function AboutPage() {
+  usePageEntry((tl) => {
+    tl.from('.about-hero', { y: 60, opacity: 0, duration: 0.7 })
+  })
+
+  return <div><h1 className="about-hero">About us</h1></div>
+}
+```
+
+```tsx filename="app/work/page.tsx"
+"use client"
+
+import { usePageEntry } from '@/motion'
+
+export default function WorkPage() {
+  usePageEntry((tl) => {
+    tl.from('.work-grid', { opacity: 0, duration: 0.5 })
+  })
+
+  return <div className="work-grid">...</div>
+}
+```
+
+---
+
+## Initial page load vs navigation
+
+`usePageEntry` runs on both initial hard load and internal navigations. On initial load, the entry runs after the preloader finishes (or immediately if no preloader is configured). On internal navigation, it runs as part of the clip-in transition.
+
+---
+
+## Without `usePageEntry`
+
+If a page doesn't call `usePageEntry`, the page content is simply revealed as the clip animates in — no additional element animations. You don't need to call it on every page.
+
+---
+
+## TypeScript
+
+```ts
+import type { TimelineAnimationFn, FreeAnimationFn, AnimationFn } from '@/motion'
+
+// Timeline fn — receives a GSAP timeline
+const myEntryFn: TimelineAnimationFn = (tl) => {
+  tl.from('.title', { y: 40, opacity: 0 })
+}
+
+// Free fn — no arguments
+const myFreeFn: FreeAnimationFn = () => {
+  gsap.from('.title', { y: 40, opacity: 0 })
+}
+```

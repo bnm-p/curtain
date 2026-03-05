@@ -1,0 +1,183 @@
+---
+title: Writing a Custom Transition
+description: Implement the TransitionDef interface to create fully custom page transitions.
+---
+
+import { Callout } from 'nextra/components'
+
+# Writing a Custom Transition
+
+A custom transition is any object that satisfies the `TransitionDef` interface. You create a file in `src/motion/transitions/`, implement the three methods, and reference it in your config.
+
+---
+
+## The three methods
+
+### `setInitialState(content)`
+
+Called synchronously in `useLayoutEffect` — after React commits the new page's DOM but before the browser paints. This is your chance to place the incoming page in its **hidden starting position** so it never flashes visible before the entry animation fires.
+
+Typical things to set here:
+- `clipPath` to hide the content (e.g. clip from below, or from the side)
+- `position: 'relative'` and `zIndex: 2` so the incoming page stacks above the ghost (which sits at z-index 1)
+- Any other GSAP props that need to be set before the first paint
+
+```ts
+setInitialState(content: HTMLElement) {
+  gsap.set(content, {
+    position: 'relative',
+    zIndex: 2,
+    clipPath: 'inset(0% 0% 100% 0%)',  // hidden from the bottom
+  })
+}
+```
+
+### `exit(ghost)`
+
+Called immediately when the user clicks a link, receiving the ghost clone of the leaving page. **Must return a `gsap.core.Tween`** so the system can kill it during cleanup if needed.
+
+The ghost is a `position: fixed` clone at z-index 1. Animate it however you like — scale, translate, clip, opacity. The ghost is removed from the DOM when this tween completes.
+
+```ts
+exit(ghost: HTMLElement): gsap.core.Tween {
+  return gsap.to(ghost, {
+    xPercent: -100,
+    duration: 1.0,
+    ease: 'expo.inOut',
+  })
+}
+```
+
+<Callout type="warning">
+  Do not use `gsap.timeline()` in `exit` — the return type must be `gsap.core.Tween`. If you need multiple tweens, use the `stagger` option or chain them with `delay`.
+</Callout>
+
+### `entry(tl, content)`
+
+Adds the entry animation to a GSAP timeline. The timeline already exists and may have other tweens in it (from a coordinated sequence). Add your tweens using `tl.to()`, `tl.from()`, etc.
+
+After `entry` returns, `usePageEntry` animations are added to the same timeline at `pageAnimDelay` offset.
+
+```ts
+entry(tl: gsap.core.Timeline, content: HTMLElement) {
+  // Always reset to the exact starting state first. In React Strict Mode,
+  // effects run twice — the first run's tween gets killed mid-flight, so
+  // the second run needs a clean starting state.
+  gsap.set(content, { clipPath: 'inset(0% 0% 100% 0%)' })
+
+  tl.to(content, {
+    clipPath: 'inset(0% 0% 0% 0%)',
+    duration: 1.0,
+    ease: 'expo.inOut',
+    onComplete: () => {
+      // Clear inline styles when done so subsequent GSAP animations
+      // on the element aren't constrained by leftover clipPath/z-index.
+      gsap.set(content, { clearProps: 'clipPath,position,zIndex' })
+    },
+  })
+}
+```
+
+---
+
+## Full example: slide-from-right
+
+```ts filename="src/motion/transitions/slide-right.ts"
+import { gsap } from 'gsap'
+import type { TransitionDef } from '../types'
+
+const EASE = 'expo.inOut'
+const DURATION = 1.0
+
+export const slideRightTransition: TransitionDef = {
+  setInitialState(content: HTMLElement) {
+    gsap.set(content, {
+      position: 'relative',
+      zIndex: 2,
+      xPercent: 100,       // incoming page starts off-screen to the right
+    })
+  },
+
+  exit(ghost: HTMLElement): gsap.core.Tween {
+    return gsap.to(ghost, {
+      xPercent: -30,       // ghost slides slightly left as it exits
+      opacity: 0,
+      duration: DURATION,
+      ease: EASE,
+    })
+  },
+
+  entry(tl: gsap.core.Timeline, content: HTMLElement) {
+    gsap.set(content, { xPercent: 100 })  // reset for Strict Mode safety
+    tl.to(content, {
+      xPercent: 0,
+      duration: DURATION,
+      ease: EASE,
+      onComplete: () => {
+        gsap.set(content, { clearProps: 'xPercent,position,zIndex' })
+      },
+    })
+  },
+}
+```
+
+Register it in config:
+
+```ts filename="src/motion/config.ts"
+import { slideRightTransition } from './transitions/slide-right'
+
+export const motionConfig = defineMotionConfig({
+  default: slideRightTransition,
+})
+```
+
+---
+
+## Full example: curtain wipe
+
+```ts filename="src/motion/transitions/curtain.ts"
+import { gsap } from 'gsap'
+import type { TransitionDef } from '../types'
+
+export const curtainTransition: TransitionDef = {
+  setInitialState(content: HTMLElement) {
+    gsap.set(content, {
+      position: 'relative',
+      zIndex: 2,
+      clipPath: 'inset(0% 100% 0% 0%)',  // hidden from the right
+    })
+  },
+
+  exit(ghost: HTMLElement): gsap.core.Tween {
+    return gsap.to(ghost, {
+      clipPath: 'inset(0% 0% 0% 100%)',  // wipe out to the left
+      duration: 1.0,
+      ease: 'expo.inOut',
+    })
+  },
+
+  entry(tl: gsap.core.Timeline, content: HTMLElement) {
+    gsap.set(content, { clipPath: 'inset(0% 100% 0% 0%)' })
+    tl.to(content, {
+      clipPath: 'inset(0% 0% 0% 0%)',
+      duration: 1.0,
+      ease: 'expo.inOut',
+      onComplete: () => {
+        gsap.set(content, { clearProps: 'clipPath,position,zIndex' })
+      },
+    })
+  },
+}
+```
+
+---
+
+## Tips
+
+**Always reset in `entry`** — Call `gsap.set(content, { ... })` at the start of `entry` to reset the element to its known starting state. React Strict Mode runs effects twice; without the reset, the second run may start from a mid-animation state.
+
+**Clear props on complete** — Call `gsap.set(content, { clearProps: '...' })` in `onComplete` to remove inline styles that would interfere with subsequent animations on the same element.
+
+**Keep `exit` returning a Tween** — The system stores `exitTweenRef.current = exitTween` and kills it during cleanup. If you use a timeline internally, wrap it: GSAP timelines are a subclass of Tween-like objects, but the return type in `TransitionDef` is `gsap.core.Tween`. To be safe, always return from `gsap.to()`.
+
+**z-index stacking** — The ghost always has `z-index: 1`. Set `position: relative; z-index: 2` on `content` in `setInitialState` so the incoming page renders above the ghost. Without this, the ghost may appear on top.

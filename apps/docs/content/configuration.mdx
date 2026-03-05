@@ -1,0 +1,266 @@
+---
+title: Configuration
+description: Full reference for motionConfig and defineMotionConfig.
+---
+
+import { Callout } from 'nextra/components'
+
+# Configuration
+
+After running `init`, your configuration lives in `src/motion/config.ts`. Edit this file to control which transitions run, how routes map to namespaces, and various timing values.
+
+```ts filename="src/motion/config.ts"
+import { gsap } from 'gsap'
+import { defaultTransition } from './transitions/default'
+import { defineMotionConfig } from './types'
+
+export const motionConfig = defineMotionConfig({
+  default: defaultTransition,
+  namespaces: {},
+  intercept: [],
+  transitions: {},
+})
+```
+
+Pass `motionConfig` to `<ViewMotionProvider config={motionConfig}>` in your layout.
+
+---
+
+## `defineMotionConfig(config)`
+
+A helper that fills in defaults and returns a fully-resolved `MotionConfig`. Using it gives you TypeScript autocomplete and ensures no option is accidentally undefined at runtime.
+
+```ts
+import { defineMotionConfig } from '@/motion/types'
+
+export const motionConfig = defineMotionConfig({
+  default: myTransition,
+  // ... all other options are optional
+})
+```
+
+---
+
+## Options reference
+
+### `default` — required
+
+**Type:** `TransitionDef`
+
+The transition that runs for every route pair that doesn't have a specific override in `transitions`. Must always be set.
+
+```ts
+import { defaultTransition } from './transitions/default'
+
+defineMotionConfig({
+  default: defaultTransition,
+})
+```
+
+See [Transitions](/transitions/overview) for the built-in options and how to write your own.
+
+---
+
+### `namespaces`
+
+**Type:** `Record<string, string>`
+**Default:** `{}`
+
+Maps route paths to logical namespace strings. Namespaces are used as keys in the `transitions` map to look up per-pair overrides.
+
+```ts
+defineMotionConfig({
+  default: defaultTransition,
+  namespaces: {
+    '/': 'home',
+    '/about': 'about',
+    '/work': 'work',
+    '/contact': 'contact',
+  },
+})
+```
+
+Routes that don't appear in `namespaces` fall back to the namespace `"default"`. If you don't configure namespaces at all, every transition lookup falls back to `default` and the `transitions` map is effectively unused.
+
+<Callout type="info">
+  Namespace keys must be exact path strings. Glob-style patterns (e.g. `/work/*`) are not currently supported — each path needs its own entry.
+</Callout>
+
+---
+
+### `transitions`
+
+**Type:** `Record<string, TransitionDef>`
+**Default:** `{}`
+
+Per-pair transition overrides. Keys are in the format `'fromNamespace -> toNamespace'` or `'* -> toNamespace'` (wildcard from-namespace).
+
+```ts
+import { fadeTransition } from './transitions/fade'
+import { slideUpTransition } from './transitions/slide-up'
+
+defineMotionConfig({
+  default: defaultTransition,
+  namespaces: {
+    '/': 'home',
+    '/about': 'about',
+    '/work': 'work',
+    '/contact': 'contact',
+  },
+  transitions: {
+    // Exact pair — only when navigating from home to about
+    'home -> about': fadeTransition,
+
+    // Wildcard from — use slideUp whenever navigating TO work, regardless of origin
+    '* -> work': slideUpTransition,
+
+    // Multiple overrides
+    'work -> home': fadeTransition,
+    'about -> contact': fadeTransition,
+  },
+})
+```
+
+**Lookup order:**
+
+1. Exact match: `'home -> about'`
+2. Wildcard match: `'* -> about'`
+3. Falls back to `default`
+
+---
+
+### `intercept`
+
+**Type:** `string[]`
+**Default:** `[]`
+
+A list of route paths that use Next.js [intercepting routes](https://nextjs.org/docs/app/building-your-application/routing/intercepting-routes) (parallel routes / modals). Transitions are **skipped** when navigating to or from these paths.
+
+```ts
+defineMotionConfig({
+  default: defaultTransition,
+  intercept: ['/modal', '/preview', '/info'],
+})
+```
+
+When a user navigates **to** an intercepting route, the page-content element's clip and position styles are cleared (so modals rendered inside a parallel slot aren't trapped in a clipping context). When navigating **back from** an intercepting route, the page is simply revealed without a transition.
+
+---
+
+### `selector`
+
+**Type:** `string`
+**Default:** `'.page-content'`
+
+The CSS selector used to find the page content element in the DOM. This element is cloned for the ghost, animated during entry, and used as the scope for GSAP selectors in `usePageEntry`.
+
+```ts
+defineMotionConfig({
+  default: defaultTransition,
+  selector: '.page-wrapper',  // if you use a different class
+})
+```
+
+<Callout type="warning">
+  Whatever element this selector targets must be a stable DOM node that lives in your layout (not re-created on every page navigation). If it re-creates on navigation, the ghost clone and entry animation will target the wrong element.
+</Callout>
+
+---
+
+### `wrapperAttr`
+
+**Type:** `string`
+**Default:** `'[data-page-wrapper]'`
+
+An attribute selector for an **inner wrapper** element inside `page-content`. When present, opacity reveal is applied to this inner element rather than the outer `page-content` element. This allows the outer clip animation and inner opacity reveal to be applied independently.
+
+```tsx
+// layout.tsx
+<main className="page-content">
+  <div data-page-wrapper>
+    {children}
+  </div>
+</main>
+```
+
+```ts
+defineMotionConfig({
+  default: defaultTransition,
+  wrapperAttr: '[data-page-wrapper]',  // default
+})
+```
+
+If no element matching `wrapperAttr` exists inside `page-content`, the outer `page-content` element is used as the wrapper (fallback). In that case, both clip and opacity are applied to the same element.
+
+---
+
+### `lockDuration`
+
+**Type:** `number` (milliseconds)
+**Default:** `800`
+
+How long to lock navigations after one starts. During this window, clicking another link is a no-op. This prevents rapid-fire navigations from stacking up transitions.
+
+```ts
+defineMotionConfig({
+  default: defaultTransition,
+  lockDuration: 1200,  // extend if your transitions are longer than 800ms
+})
+```
+
+Set this to at least as long as your longest transition duration. If users can click links before a transition finishes, they'll see the ghost from the previous navigation still on screen.
+
+---
+
+### `pageAnimDelay`
+
+**Type:** `number` (seconds)
+**Default:** `0.4`
+
+How many seconds into the clip entry animation the `usePageEntry` animations should start. A value of `0.4` means page-level animations begin 0.4 seconds after the clip-in starts — giving the clip time to partly reveal the content before element animations fire.
+
+```ts
+defineMotionConfig({
+  default: defaultTransition,
+  pageAnimDelay: 0.2,  // start page animations earlier
+})
+```
+
+This is a GSAP timeline position offset, so it's relative to the start of the entry clip tween.
+
+---
+
+## Full example
+
+```ts filename="src/motion/config.ts"
+import { gsap } from 'gsap'
+import { defaultTransition } from './transitions/default'
+import { fadeTransition } from './transitions/fade'
+import { defineMotionConfig } from './types'
+
+export const motionConfig = defineMotionConfig({
+  // Default for all route pairs without a specific override
+  default: defaultTransition,
+
+  // Map paths to namespace strings for transition lookups
+  namespaces: {
+    '/': 'home',
+    '/about': 'about',
+    '/work': 'work',
+    '/contact': 'contact',
+  },
+
+  // Routes using Next.js intercepting/parallel routes
+  intercept: ['/preview'],
+
+  // Specific per-pair overrides
+  transitions: {
+    '* -> contact': fadeTransition,
+    'work -> home': fadeTransition,
+  },
+
+  // Timing
+  lockDuration: 1000,
+  pageAnimDelay: 0.3,
+})
+```

@@ -1,0 +1,146 @@
+---
+title: Preloader
+description: Built-in bar-wipe preloader that blocks page reveal on initial load.
+---
+
+import { Callout } from 'nextra/components'
+
+# Preloader
+
+An optional overlay that plays on initial hard load. It blocks `usePageEntry` animations until its sequence completes — ensuring elements don't try to animate in while the preloader is still covering the screen.
+
+## Installation
+
+The preloader is not included in `init`. Add it with:
+
+```sh
+view-motion add preloader
+```
+
+This copies `preloader.tsx` into `src/motion/preloader.tsx`.
+
+---
+
+## Setup
+
+Pass it to `<ViewMotionProvider>` via the `extras` prop. The `extras` prop renders outside `<PageTransition>` but inside the motion context — this is intentional so the preloader can control the reveal timing without being affected by page transitions.
+
+```tsx filename="app/layout.tsx"
+import { ViewMotionProvider } from '@/motion/provider'
+import { motionConfig } from '@/motion/config'
+import { Preloader } from '@/motion/preloader'
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <ViewMotionProvider
+          config={motionConfig}
+          extras={<Preloader title="YOUR NAME" caption="Creative Developer" />}
+        >
+          <main className="page-content">
+            {children}
+          </main>
+        </ViewMotionProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+<Callout type="info">
+  The preloader only plays on initial hard load. On internal navigations, the preloader is already done and `onPreloaderReady` fires synchronously — page reveal is instant.
+</Callout>
+
+---
+
+## Props
+
+### `title`
+
+**Type:** `string | undefined`
+
+Large display text shown in the center of the preloader. Each word is revealed with an individual bar-wipe animation, staggered.
+
+```tsx
+<Preloader title="STUDIO NAME" />
+```
+
+### `caption`
+
+**Type:** `string | undefined`
+
+Small text displayed above the title. Fades in at reduced opacity after the word wipes complete.
+
+```tsx
+<Preloader title="STUDIO NAME" caption="Creative Direction" />
+```
+
+### `render`
+
+**Type:** `(props: { notifyDone: () => void }) => React.ReactNode`
+
+Fully custom render. When provided, `title` and `caption` are ignored and the built-in bar-wipe sequence does not run. You control the animation entirely — call `notifyDone()` when your animation is done to release the page reveal.
+
+```tsx
+<Preloader
+  render={({ notifyDone }) => (
+    <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center">
+      <MyCustomIntroAnimation onComplete={notifyDone} />
+    </div>
+  )}
+/>
+```
+
+---
+
+## Built-in animation sequence
+
+The default bar-wipe sequence:
+
+1. For each word in `title`: a white bar slides in from the left (`expo.in`, 0.55s), revealing the word beneath it, then exits to the right (`expo.out`, 0.65s). Words are staggered by 0.12s.
+2. `caption` fades in at 50% opacity after the words.
+3. A 0.5s hold.
+4. The overlay wipes away from the bottom (`inset(0 0 0% 0)` → `inset(0 0 100% 0)`, 1.2s `expo.inOut`).
+5. `notifyPreloaderDone()` is called at step 4, releasing the page entry animations — so the page begins revealing as the overlay wipes away, creating a layered effect.
+
+---
+
+## Customisation
+
+The preloader is copied into your project as `src/motion/preloader.tsx` — you own it. To change the animation, edit the `useEffect` block directly:
+
+```tsx filename="src/motion/preloader.tsx"
+// Find the gsap.timeline() block and modify:
+const tl = gsap.timeline()
+
+// Example: change the hold duration
+tl.to({}, { duration: 1.0 })  // was 0.5
+
+// Example: change the exit direction (wipe up instead of down)
+gsap.fromTo(
+  overlayRef.current,
+  { clipPath: 'inset(0 0 0 0)' },
+  { clipPath: 'inset(100% 0 0 0)', duration: 1.2, ease: 'expo.inOut' }
+)
+```
+
+### CSS variables
+
+The built-in overlay uses `var(--background, #ffffff)` for the bar wipe bars, so they match your theme. The overlay background uses `bg-foreground` (Tailwind). If you're not using Tailwind or your colours are different, update the classes or CSS variables directly.
+
+---
+
+## How blocking works
+
+Internally, the preloader calls `registerPreloader()` during render (before any effects). This sets a `preloaderDone` flag to `false` in the motion context. `page-transition.tsx` calls `onPreloaderReady(callback)` for the initial load — if `preloaderDone` is false, the callback is queued instead of firing immediately.
+
+When the preloader animation completes, it calls `notifyPreloaderDone()`, which flushes the queue — releasing the page reveal.
+
+If no `<Preloader>` is mounted, `preloaderDone` defaults to `true` and `onPreloaderReady` fires synchronously. Pages reveal immediately without waiting for anything.
+
+---
+
+## Server rendering
+
+The preloader renders a static background colour on the server (`<div className="fixed inset-x-0 -top-64 -bottom-64 z-[200] bg-foreground" />`). This prevents any flash of the page content before the client-side preloader mounts and takes over. The extra height (`-top-64 -bottom-64`) accounts for browser chrome on mobile.
