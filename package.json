@@ -1,0 +1,9 @@
+{
+  "name": "view-motion-workspace",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "bun run --filter './packages/*' build",
+    "dev": "bun run --filter './packages/cli' dev"
+  }
+}

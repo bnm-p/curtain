@@ -1,0 +1,34 @@
+{
+  "name": "view-motion",
+  "version": "0.1.0",
+  "description": "Zero-config page transition system for Next.js App Router",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "view-motion": "./dist/view-motion.js"
+  },
+  "files": [
+    "dist",
+    "registry"
+  ],
+  "scripts": {
+    "build": "bun build ./bin/view-motion.ts --outdir ./dist --outfile view-motion.js --target node --minify",
+    "dev": "bun run ./bin/view-motion.ts"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.8.0"
+  },
+  "peerDependencies": {
+    "gsap": ">=3.0.0"
+  },
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.0.0"
+  }
+}
