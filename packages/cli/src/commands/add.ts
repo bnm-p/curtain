@@ -57,6 +57,12 @@ export async function runAdd(
     }
 
     copyFile(src, dest)
+
+    // Fix the import path: registry uses '../core/context' but the copied file
+    // lives alongside context.tsx, so it should be './context'
+    const content = fs.readFileSync(dest, "utf8")
+    fs.writeFileSync(dest, content.replace("../core/context", "./context"))
+
     console.log(chalk.green(`  ✓ ${destRelative}`))
     console.log()
     console.log(chalk.bold("Usage:"))
