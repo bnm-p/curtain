@@ -3,7 +3,7 @@
 import { usePageEntry, usePageLeave } from "@/motion";
 import type { NextPage } from "next";
 
-const IndexPage: NextPage = () => {
+const AboutPage: NextPage = () => {
 	usePageEntry((tl) => {
 		tl.from(".title", { y: 40, opacity: 0, duration: 0.6 });
 	});
@@ -15,10 +15,10 @@ const IndexPage: NextPage = () => {
 	return (
 		<div className="h-svh grid place-items-center">
 			<h1 className="title | text-7xl font-light tracking-tighter">
-				IndexPage
+				AboutPage
 			</h1>
 		</div>
 	);
 };
 
-export default IndexPage;
+export default AboutPage;
