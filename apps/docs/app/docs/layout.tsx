@@ -1,8 +1,7 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { source } from "@/lib/source"
-import type { ReactNode } from "react"
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <DocsLayout
       tree={source.getPageTree()}

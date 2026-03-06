@@ -1,6 +1,4 @@
-import { defineMeta } from "fumadocs-mdx/config"
-
-export default defineMeta({
+export default {
   title: "Transitions",
   pages: ["index", "custom"],
-})
+}
