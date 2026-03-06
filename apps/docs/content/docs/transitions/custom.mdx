@@ -1,0 +1,14 @@
+---
+title: Custom Transitions
+description: Write your own TransitionDef.
+---
+
+## TransitionDef interface
+
+```ts
+interface TransitionDef {
+  setInitialState(content: HTMLElement): void
+  exit(content: HTMLElement): AnimationTween
+  entry(tl: AnimationTimeline, content: HTMLElement): void
+}
+```
