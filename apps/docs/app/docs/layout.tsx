@@ -5,7 +5,7 @@ export default function Layout({ children }: Readonly<{ children: React.ReactNod
   return (
     <DocsLayout
       tree={source.getPageTree()}
-      nav={{ title: "@bnm/curtain" }}
+      nav={{ title: "@bnm-p/curtain" }}
     >
       {children}
     </DocsLayout>

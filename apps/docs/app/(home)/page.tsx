@@ -3,7 +3,7 @@ import Link from "next/link"
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 text-center">
-      <h1 className="text-5xl font-bold tracking-tight">@bnm/curtain</h1>
+      <h1 className="text-5xl font-bold tracking-tight">@bnm-p/curtain</h1>
       <p className="max-w-md text-lg text-fd-muted-foreground">
         Page transition system for Next.js App Router.
       </p>

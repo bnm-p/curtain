@@ -1,7 +1,7 @@
 "use client";
 
 import { gsap } from "@/lib/gsap";
-import { defaultTransition, defineCurtainConfig } from "@bnm/curtain"
+import { defaultTransition, defineCurtainConfig } from "@bnm-p/curtain"
 
 /**
  * Your curtain config. Edit this file to customise transitions, namespaces,

@@ -5,7 +5,7 @@ description: Build a custom preloader that blocks page entry animations until yo
 
 `usePreloader` gives you a single `notifyDone` function. Call it when your preloader animation is finished — the page entry animations won't fire until you do.
 
-You build the preloader UI yourself. `@bnm/curtain` only handles the timing contract.
+You build the preloader UI yourself. `@bnm-p/curtain` only handles the timing contract.
 
 ---
 
@@ -14,7 +14,7 @@ You build the preloader UI yourself. `@bnm/curtain` only handles the timing cont
 ```tsx
 "use client"
 
-import { usePreloader } from "@bnm/curtain"
+import { usePreloader } from "@bnm-p/curtain"
 import { useEffect } from "react"
 
 export const Preloader = () => {
@@ -39,7 +39,7 @@ This is the pattern from the example app: the preloader holds for a moment, sign
 ```tsx title="src/components/preloader.tsx"
 "use client"
 
-import { usePreloader } from "@bnm/curtain"
+import { usePreloader } from "@bnm-p/curtain"
 import { gsap } from "gsap"
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
@@ -101,7 +101,7 @@ export const Preloader = () => {
 Pass your preloader to `CurtainProvider` via the `extras` prop. This renders it inside the curtain context but outside the `PageTransition` wrapper.
 
 ```tsx title="app/layout.tsx"
-import { CurtainProvider } from "@bnm/curtain"
+import { CurtainProvider } from "@bnm-p/curtain"
 import { curtainConfig } from "@/curtain.config"
 import { Preloader } from "@/components/preloader"
 

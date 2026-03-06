@@ -26,7 +26,7 @@ interface CurtainProviderProps extends PropsWithChildren {
  *
  * Basic setup (app/layout.tsx):
  * ```tsx
- * import { CurtainProvider } from '@bnm/curtain'
+ * import { CurtainProvider } from '@bnm-p/curtain'
  * import { curtainConfig } from '@/curtain.config'
  *
  * export default function RootLayout({ children }) {

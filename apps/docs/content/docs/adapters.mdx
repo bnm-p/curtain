@@ -3,7 +3,7 @@ title: Adapters
 description: Use the built-in GSAP adapter or swap it out for any animation library.
 ---
 
-All animations in `@bnm/curtain` — transitions, timeline sequencing, and property setting — go through an `AnimationAdapter`. This means the core system doesn't depend on GSAP directly. You can swap it out.
+All animations in `@bnm-p/curtain` — transitions, timeline sequencing, and property setting — go through an `AnimationAdapter`. This means the core system doesn't depend on GSAP directly. You can swap it out.
 
 The default adapter is `gsapAdapter()`, used automatically when you don't specify one.
 
@@ -14,7 +14,7 @@ The default adapter is `gsapAdapter()`, used automatically when you don't specif
 No setup required for basic usage. GSAP is resolved automatically.
 
 ```ts title="src/curtain.config.ts"
-import { defineCurtainConfig, defaultTransition } from "@bnm/curtain"
+import { defineCurtainConfig, defaultTransition } from "@bnm-p/curtain"
 
 export const curtainConfig = defineCurtainConfig({
   default: defaultTransition,
@@ -42,7 +42,7 @@ export { gsap, ScrollTrigger, SplitText }
 "use client"
 
 import { gsap } from "@/lib/gsap"
-import { defineCurtainConfig, gsapAdapter, defaultTransition } from "@bnm/curtain"
+import { defineCurtainConfig, gsapAdapter, defaultTransition } from "@bnm-p/curtain"
 
 export const curtainConfig = defineCurtainConfig({
   default: defaultTransition,
@@ -57,7 +57,7 @@ export const curtainConfig = defineCurtainConfig({
 To use a different animation library, implement the `AnimationAdapter` interface and pass it to `defineCurtainConfig`.
 
 ```ts
-import type { AnimationAdapter, AnimationTimeline } from "@bnm/curtain"
+import type { AnimationAdapter, AnimationTimeline } from "@bnm-p/curtain"
 
 const myAdapter = (): AnimationAdapter => ({
   set(targets, vars) {

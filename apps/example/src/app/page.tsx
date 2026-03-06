@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrollTrigger, SplitText, gsap } from "@/lib/gsap";
-import { usePageEntry, usePageLeave } from "@bnm/curtain";
+import { usePageEntry, usePageLeave } from "@bnm-p/curtain";
 import type { NextPage } from "next";
 import { useEffect, useRef } from "react";
 

@@ -50,7 +50,7 @@ const wrapTimeline = (raw: gsap.core.Timeline): GsapTimelineInternal => {
  * setup file:
  * ```ts
  * import { gsap } from "@/lib/gsap" // your plugin-registering file
- * import { gsapAdapter } from "@bnm/curtain"
+ * import { gsapAdapter } from "@bnm-p/curtain"
  *
  * defineCurtainConfig({ adapter: gsapAdapter(gsap), ... })
  * ```

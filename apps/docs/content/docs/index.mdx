@@ -1,12 +1,12 @@
 ---
 title: Getting Started
-description: Install and set up @bnm/curtain in your Next.js App Router project.
+description: Install and set up @bnm-p/curtain in your Next.js App Router project.
 ---
 
 ## Installation
 
 ```bash
-npm install @bnm/curtain gsap
+npm install @bnm-p/curtain gsap
 ```
 
 `gsap` is a peer dependency. The built-in adapter uses it under the hood for all transition and page animations.
@@ -24,7 +24,7 @@ Create `src/curtain.config.ts` (or anywhere you prefer). This is where all your 
 ```ts title="src/curtain.config.ts"
 "use client"
 
-import { defaultTransition, defineCurtainConfig } from "@bnm/curtain"
+import { defaultTransition, defineCurtainConfig } from "@bnm-p/curtain"
 
 export const curtainConfig = defineCurtainConfig({
   default: defaultTransition,
@@ -34,7 +34,7 @@ export const curtainConfig = defineCurtainConfig({
 ### 2. Add CurtainProvider to your root layout
 
 ```tsx title="app/layout.tsx"
-import { CurtainProvider } from "@bnm/curtain"
+import { CurtainProvider } from "@bnm-p/curtain"
 import { curtainConfig } from "@/curtain.config"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

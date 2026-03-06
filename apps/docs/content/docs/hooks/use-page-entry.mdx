@@ -16,7 +16,7 @@ Pass a function that receives the entry timeline `tl`. Tweens added to `tl` are 
 ```tsx title="app/about/page.tsx"
 "use client"
 
-import { usePageEntry } from "@bnm/curtain"
+import { usePageEntry } from "@bnm-p/curtain"
 
 export default function AboutPage() {
   usePageEntry((tl) => {
@@ -46,7 +46,7 @@ Pass a zero-argument function to run outside the entry timeline. Useful when you
 ```tsx
 "use client"
 
-import { usePageEntry } from "@bnm/curtain"
+import { usePageEntry } from "@bnm-p/curtain"
 import { gsap } from "@/lib/gsap"
 import { SplitText } from "gsap/SplitText"
 

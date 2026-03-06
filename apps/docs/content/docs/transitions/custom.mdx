@@ -6,7 +6,7 @@ description: Write your own TransitionDef to fully control how pages enter and l
 A transition is a plain object that implements the `TransitionDef` interface. Three methods, each responsible for one phase of the handoff.
 
 ```ts
-import type { TransitionDef, AnimationTimeline, AnimationTween } from "@bnm/curtain"
+import type { TransitionDef, AnimationTimeline, AnimationTween } from "@bnm-p/curtain"
 
 const myTransition: TransitionDef = {
   setInitialState(content: HTMLElement) {
@@ -32,7 +32,7 @@ const myTransition: TransitionDef = {
 
 ```ts
 import { gsap } from "gsap"
-import type { TransitionDef, AnimationTimeline, AnimationTween } from "@bnm/curtain"
+import type { TransitionDef, AnimationTimeline, AnimationTween } from "@bnm-p/curtain"
 
 export const slideTransition: TransitionDef = {
   setInitialState(content) {
@@ -71,7 +71,7 @@ export const slideTransition: TransitionDef = {
 
 ```ts title="src/curtain.config.ts"
 import { slideTransition } from "@/transitions/slide"
-import { defineCurtainConfig, fadeTransition } from "@bnm/curtain"
+import { defineCurtainConfig, fadeTransition } from "@bnm-p/curtain"
 
 export const curtainConfig = defineCurtainConfig({
   default: slideTransition,

@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { CurtainProvider } from "@bnm/curtain";
+import { CurtainProvider } from "@bnm-p/curtain";
 import { Preloader } from "@/components/preloader";
 import { curtainConfig } from "@/curtain.config";
 import type { Metadata } from "next";

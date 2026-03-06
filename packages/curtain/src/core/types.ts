@@ -35,7 +35,7 @@ export interface AnimationTween {
  *
  * @example
  * // curtain.config.ts
- * import { defineCurtainConfig } from "@bnm/curtain"
+ * import { defineCurtainConfig } from "@bnm-p/curtain"
  * import { myAdapter } from "./my-adapter"
  *
  * export const curtainConfig = defineCurtainConfig({

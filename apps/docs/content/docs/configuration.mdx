@@ -8,7 +8,7 @@ description: All options available in defineCurtainConfig.
 ```ts title="src/curtain.config.ts"
 "use client"
 
-import { defineCurtainConfig, defaultTransition, fadeTransition } from "@bnm/curtain"
+import { defineCurtainConfig, defaultTransition, fadeTransition } from "@bnm-p/curtain"
 
 export const curtainConfig = defineCurtainConfig({
   default: defaultTransition,
@@ -78,7 +78,7 @@ When the user navigates from `/` (namespace `"home"`) to `/work` (namespace `"wo
 The animation library adapter. Defaults to the built-in `gsapAdapter()`. Swap this to use a different animation library.
 
 ```ts
-import { gsapAdapter } from "@bnm/curtain"
+import { gsapAdapter } from "@bnm-p/curtain"
 import { gsap } from "@/lib/gsap" // your central GSAP setup file
 
 adapter: gsapAdapter(gsap)

@@ -1,5 +1,5 @@
 {
-  "name": "@bnm/curtain",
+  "name": "@bnm-p/curtain",
   "version": "0.1.0",
   "description": "Page transition system for Next.js App Router",
   "type": "module",

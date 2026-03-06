@@ -1,6 +1,6 @@
 "use client";
 
-import { usePreloader } from "@bnm/curtain";
+import { usePreloader } from "@bnm-p/curtain";
 import { gsap } from "gsap";
 import { type FC, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
