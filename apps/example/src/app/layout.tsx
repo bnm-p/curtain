@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { ViewMotionProvider } from "@bnm/curtain";
+import { CurtainProvider } from "@bnm/curtain";
 import { Preloader } from "@/components/preloader";
 import { motionConfig } from "@/curtain.config";
 import type { Metadata } from "next";
@@ -32,13 +32,13 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-foreground`}
 			>
-				<ViewMotionProvider config={motionConfig} extras={<Preloader />}>
+				<CurtainProvider config={motionConfig} extras={<Preloader />}>
 					<header className="fixed inset-x-0 pt-5 flex justify-center gap-x-2 z-50">
 						<Link href={"/"}>Home</Link>
 						<Link href={"/about"}>About</Link>
 					</header>
 					<main className="page-content | bg-background">{children}</main>
-				</ViewMotionProvider>
+				</CurtainProvider>
 			</body>
 		</html>
 	);

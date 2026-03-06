@@ -76,7 +76,7 @@ export const MotionContextProvider: FC<MotionContextProviderProps> = ({
 export const useMotionContext = (): MotionContextType => {
   const ctx = useContext(MotionContext)
   if (!ctx) {
-    throw new Error("useMotionContext must be used within <ViewMotionProvider>")
+    throw new Error("useMotionContext must be used within <CurtainProvider>")
   }
   return ctx
 }

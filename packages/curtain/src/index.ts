@@ -1,4 +1,4 @@
-export { ViewMotionProvider } from "./core/provider"
+export { CurtainProvider } from "./core/provider"
 export { PageTransition } from "./core/page-transition"
 export { useMotionContext } from "./core/context"
 export { usePageEntry } from "./core/hooks/use-page-entry"

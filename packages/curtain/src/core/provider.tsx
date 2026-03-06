@@ -6,7 +6,7 @@ import { PageTransition } from "./page-transition"
 import type { MotionConfig } from "./types"
 import { defineMotionConfig } from "./config"
 
-interface ViewMotionProviderProps extends PropsWithChildren {
+interface CurtainProviderProps extends PropsWithChildren {
   config: MotionConfig
   /**
    * Optional extra children rendered outside <PageTransition> but still inside
@@ -14,9 +14,9 @@ interface ViewMotionProviderProps extends PropsWithChildren {
    * the optional <Preloader />.
    *
    * @example
-   * <ViewMotionProvider config={motionConfig} extras={<>{modal}<Preloader /></>}>
+   * <CurtainProvider config={motionConfig} extras={<>{modal}<Preloader /></>}>
    *   {children}
-   * </ViewMotionProvider>
+   * </CurtainProvider>
    */
   extras?: React.ReactNode
 }
@@ -26,16 +26,16 @@ interface ViewMotionProviderProps extends PropsWithChildren {
  *
  * Basic setup (app/layout.tsx):
  * ```tsx
- * import { ViewMotionProvider } from '@bnm/curtain'
+ * import { CurtainProvider } from '@bnm/curtain'
  * import { motionConfig } from '@/motion/config'
  *
  * export default function RootLayout({ children }) {
  *   return (
  *     <html>
  *       <body>
- *         <ViewMotionProvider config={motionConfig}>
+ *         <CurtainProvider config={motionConfig}>
  *           {children}
- *         </ViewMotionProvider>
+ *         </CurtainProvider>
  *       </body>
  *     </html>
  *   )
@@ -44,12 +44,12 @@ interface ViewMotionProviderProps extends PropsWithChildren {
  *
  * With intercepting routes + preloader:
  * ```tsx
- * <ViewMotionProvider config={motionConfig} extras={<><Preloader />{modal}</>}>
+ * <CurtainProvider config={motionConfig} extras={<><Preloader />{modal}</>}>
  *   {children}
- * </ViewMotionProvider>
+ * </CurtainProvider>
  * ```
  */
-export const ViewMotionProvider: FC<ViewMotionProviderProps> = ({
+export const CurtainProvider: FC<CurtainProviderProps> = ({
   config,
   children,
   extras,
