@@ -1,5 +1,5 @@
 import { gsap } from "gsap"
-import type { TransitionDef } from "../core/types"
+import type { AnimationTimeline, AnimationTween, TransitionDef } from "../core/types"
 
 const EASE = "expo.inOut"
 const DURATION = 1.2
@@ -19,8 +19,8 @@ export const defaultTransition: TransitionDef = {
     })
   },
 
-  exit(content: HTMLElement): gsap.core.Tween {
-    return gsap.to(content, {
+  exit(content: HTMLElement): AnimationTween {
+    const tween = gsap.to(content, {
       y: -window.innerHeight * 0.3,
       opacity: 0,
       scale: 0.8,
@@ -29,9 +29,13 @@ export const defaultTransition: TransitionDef = {
       force3D: true,
       ease: EASE,
     })
+    return {
+      onComplete(fn) { tween.eventCallback("onComplete", fn); return this },
+      kill() { tween.kill() },
+    }
   },
 
-  entry(tl: gsap.core.Timeline, content: HTMLElement) {
+  entry(tl: AnimationTimeline, content: HTMLElement) {
     // Always reset to start state before animating.
     // This ensures Strict Mode's 2nd invocation starts from 100svh even if
     // the 1st invocation's tween was killed mid-flight.

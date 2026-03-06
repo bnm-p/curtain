@@ -7,14 +7,11 @@ import {
   useContext,
   useRef,
 } from "react"
-import type { MotionConfig } from "./types"
-
-export type TimelineAnimationFn = (tl: gsap.core.Timeline) => void
-export type FreeAnimationFn = () => void
-export type AnimationFn = TimelineAnimationFn | FreeAnimationFn
+import type { AnimationFn, MotionConfig } from "./types"
+import type { ResolvedMotionConfig } from "./config"
 
 interface MotionContextType {
-  config: Required<MotionConfig>
+  config: ResolvedMotionConfig
   setEntryAnimations: (fn: AnimationFn) => void
   getEntryAnimations: () => AnimationFn | null
   setLeaveAnimations: (fn: AnimationFn | null) => void
@@ -27,7 +24,7 @@ interface MotionContextType {
 const MotionContext = createContext<MotionContextType | undefined>(undefined)
 
 interface MotionContextProviderProps extends PropsWithChildren {
-  config: Required<MotionConfig>
+  config: ResolvedMotionConfig
 }
 
 export const MotionContextProvider: FC<MotionContextProviderProps> = ({

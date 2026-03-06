@@ -1,0 +1,1 @@
+export { gsapAdapter } from "./gsap"

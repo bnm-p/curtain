@@ -4,7 +4,7 @@ import { type FC, type PropsWithChildren } from "react"
 import { MotionContextProvider } from "./context"
 import { PageTransition } from "./page-transition"
 import type { MotionConfig } from "./types"
-import { defineMotionConfig } from "./types"
+import { defineMotionConfig } from "./config"
 
 interface ViewMotionProviderProps extends PropsWithChildren {
   config: MotionConfig
@@ -26,7 +26,7 @@ interface ViewMotionProviderProps extends PropsWithChildren {
  *
  * Basic setup (app/layout.tsx):
  * ```tsx
- * import { ViewMotionProvider } from '@/motion/provider'
+ * import { ViewMotionProvider } from '@bnm/curtain'
  * import { motionConfig } from '@/motion/config'
  *
  * export default function RootLayout({ children }) {

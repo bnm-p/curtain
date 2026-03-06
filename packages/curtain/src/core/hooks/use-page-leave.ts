@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import type { AnimationFn, FreeAnimationFn, TimelineAnimationFn } from "../context"
+import type { AnimationFn, FreeAnimationFn, TimelineAnimationFn } from "../types"
 import { useMotionContext } from "../context"
 
 /**
@@ -36,7 +36,7 @@ export function usePageLeave(fn: AnimationFn) {
 
   useEffect(() => {
     if (isTimeline) {
-      setLeaveAnimations((tl: gsap.core.Timeline) =>
+      setLeaveAnimations((tl) =>
         (fnRef.current as TimelineAnimationFn)(tl),
       )
     } else {

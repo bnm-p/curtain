@@ -1,5 +1,5 @@
 import { gsap } from "gsap"
-import type { TransitionDef } from "../core/types"
+import type { AnimationTimeline, AnimationTween, TransitionDef } from "../core/types"
 
 const DURATION = 0.5
 
@@ -14,15 +14,19 @@ export const fadeTransition: TransitionDef = {
     gsap.set(content, { opacity: 0 })
   },
 
-  exit(content: HTMLElement): gsap.core.Tween {
-    return gsap.to(content, {
+  exit(content: HTMLElement): AnimationTween {
+    const tween = gsap.to(content, {
       opacity: 0,
       duration: DURATION,
       ease: "power2.inOut",
     })
+    return {
+      onComplete(fn) { tween.eventCallback("onComplete", fn); return this },
+      kill() { tween.kill() },
+    }
   },
 
-  entry(tl: gsap.core.Timeline, content: HTMLElement) {
+  entry(tl: AnimationTimeline, content: HTMLElement) {
     gsap.set(content, { opacity: 0 })
     tl.to(content, {
       opacity: 1,

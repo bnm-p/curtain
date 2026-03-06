@@ -1,10 +1,9 @@
 "use client"
 
-import { gsap } from "gsap"
 import { usePathname, useRouter } from "next/navigation"
 import { type FC, type PropsWithChildren, useEffect, useLayoutEffect, useRef } from "react"
-import { type AnimationFn, type TimelineAnimationFn, useMotionContext } from "./context"
-import type { TransitionDef } from "./types"
+import type { AnimationFn, AnimationTween, FreeAnimationFn, TimelineAnimationFn, TransitionDef } from "./types"
+import { useMotionContext } from "./context"
 
 export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter()
@@ -12,6 +11,7 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
   const { config, getEntryAnimations, getLeaveAnimations, onPreloaderReady } = useMotionContext()
 
   const {
+    adapter,
     selector,
     wrapperAttr,
     lockDuration,
@@ -27,7 +27,7 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
   // (vs initial mount or Strict Mode re-invocation).
   const activeTransitionRef = useRef<TransitionDef | null>(null)
   const ghostRef = useRef<HTMLElement | null>(null)
-  const exitTweenRef = useRef<gsap.core.Tween | null>(null)
+  const exitTweenRef = useRef<AnimationTween | null>(null)
   const prevPathnameRef = useRef(pathname)
   const isTransitioning = useRef(false)
 
@@ -59,17 +59,17 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
     const content = document.querySelector<HTMLElement>(selector)
     if (!content) return
 
-    // Reset wrapper opacity — GSAP inline opacity:1 from the previous navigation
+    // Reset wrapper opacity — adapter inline opacity:1 from the previous navigation
     // overrides any opacity-0 class, so new content would flash visible before
     // the entry animation fires.
     const wrapper = getWrapper(content)
-    gsap.set(wrapper, { opacity: 0 })
+    adapter.set(wrapper, { opacity: 0 })
 
     if (!activeTransitionRef.current) return
 
     // Clear residual transform/clip props from any interrupted previous animation
     // (covers popstate and rapid navigation).
-    gsap.set(content, { clearProps: "clipPath,x,y,scale,opacity" })
+    adapter.set(content, { clearProps: "clipPath,x,y,scale,opacity" })
     activeTransitionRef.current.setInitialState(content)
   }, [pathname])
 
@@ -91,10 +91,10 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
     // animation and clear position/zIndex from the content element — if left
     // set, it creates a stacking context that traps the overlay below the nav.
     if (isIntercepting(pathname)) {
-      gsap.killTweensOf(content)
-      gsap.set(content, { clearProps: "clipPath,position,zIndex" })
+      adapter.killTweensOf(content)
+      adapter.set(content, { clearProps: "clipPath,position,zIndex" })
       const wrapper = getWrapper(content)
-      gsap.set(wrapper, { opacity: 1 })
+      adapter.set(wrapper, { opacity: 1 })
       return
     }
 
@@ -103,11 +103,11 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
     // activeTransition set, so it falls through and runs the normal animation.
     if (isIntercepting(prevPathname) && !activeTransition) {
       const wrapper = getWrapper(content)
-      gsap.set(wrapper, { opacity: 1 })
+      adapter.set(wrapper, { opacity: 1 })
       return
     }
 
-    const entryTl = gsap.timeline()
+    const entryTl = adapter.timeline()
 
     // Transition clip/slide only runs on real navigations, not initial load.
     if (activeTransition) {
@@ -123,15 +123,15 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
       const wrapper = getWrapper(content)
 
       // Reveal the wrapper immediately so the clip entry animation is visible.
-      gsap.set(wrapper, { opacity: 1 })
+      adapter.set(wrapper, { opacity: 1 })
 
       if (fn) {
         if (fn.length > 0) {
           // TimelineAnimationFn: scope selectors to content so they don't
           // accidentally target elements in the ghost clone.
-          const pageTl = gsap.timeline()
-          gsap.context(() => (fn as TimelineAnimationFn)(pageTl), content)
-          entryTl.add(pageTl, `<${pageAnimDelay}`)
+          const pageTl = adapter.timeline()
+          adapter.scope(() => (fn as TimelineAnimationFn)(pageTl), content)
+          entryTl.nest(pageTl, `<${pageAnimDelay}`)
         } else {
           // FreeAnimationFn: runs freely after the transition.
           entryTl.call(
@@ -187,10 +187,10 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
       const content = document.querySelector<HTMLElement>(selector)
       if (content) {
         // Kill any ongoing entry animation and reset only transition-level
-        // inline styles. Using clearProps:"all" would wipe child element GSAP
-        // styles, making the ghost look wrong.
-        gsap.killTweensOf(content)
-        gsap.set(content, {
+        // inline styles. Using clearProps:"all" would wipe child element styles,
+        // making the ghost look wrong.
+        adapter.killTweensOf(content)
+        adapter.set(content, {
           clearProps: "clipPath,x,y,scale,opacity,position,zIndex",
         })
 
@@ -211,14 +211,14 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
         document.body.appendChild(ghost)
         ghostRef.current = ghost
 
-        // Hide original immediately via direct style — not just GSAP — so
+        // Hide original immediately via direct style — not just the adapter — so
         // it's invisible even if React 18 concurrent mode paints before
         // useLayoutEffect fires.
         content.style.opacity = "0"
         content.style.clipPath = "inset(0% 0% 100% 0%)"
 
         const exitTween = transition.exit(ghost)
-        exitTween.eventCallback("onComplete", () => {
+        exitTween.onComplete(() => {
           if (ghostRef.current === ghost) {
             ghost.remove()
             ghostRef.current = null
@@ -230,8 +230,8 @@ export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
         // elements within the cloned page, not the incoming page.
         const leaveFn = getLeaveAnimations()
         if (leaveFn) {
-          const leaveTl = gsap.timeline()
-          gsap.context(() => {
+          const leaveTl = adapter.timeline()
+          adapter.scope(() => {
             if (leaveFn.length > 0) {
               ;(leaveFn as TimelineAnimationFn)(leaveTl)
             } else {
