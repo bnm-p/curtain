@@ -1,20 +1,20 @@
 "use client"
 
 import { type FC, type PropsWithChildren } from "react"
-import { MotionContextProvider } from "./context"
+import { CurtainContextProvider } from "./context"
 import { PageTransition } from "./page-transition"
-import type { MotionConfig } from "./types"
-import { defineMotionConfig } from "./config"
+import type { CurtainConfig } from "./types"
+import { defineCurtainConfig } from "./config"
 
 interface CurtainProviderProps extends PropsWithChildren {
-  config: MotionConfig
+  config: CurtainConfig
   /**
    * Optional extra children rendered outside <PageTransition> but still inside
-   * the motion context. Use this for parallel/intercepting routes (modals) and
-   * the optional <Preloader />.
+   * the curtain context. Use this for parallel/intercepting routes (modals) and
+   * the optional preloader.
    *
    * @example
-   * <CurtainProvider config={motionConfig} extras={<>{modal}<Preloader /></>}>
+   * <CurtainProvider config={curtainConfig} extras={<>{modal}<Preloader /></>}>
    *   {children}
    * </CurtainProvider>
    */
@@ -22,18 +22,18 @@ interface CurtainProviderProps extends PropsWithChildren {
 }
 
 /**
- * Wraps your layout with the motion context + page transition orchestrator.
+ * Wraps your layout with the curtain context + page transition orchestrator.
  *
  * Basic setup (app/layout.tsx):
  * ```tsx
  * import { CurtainProvider } from '@bnm/curtain'
- * import { motionConfig } from '@/motion/config'
+ * import { curtainConfig } from '@/curtain.config'
  *
  * export default function RootLayout({ children }) {
  *   return (
  *     <html>
  *       <body>
- *         <CurtainProvider config={motionConfig}>
+ *         <CurtainProvider config={curtainConfig}>
  *           {children}
  *         </CurtainProvider>
  *       </body>
@@ -44,7 +44,7 @@ interface CurtainProviderProps extends PropsWithChildren {
  *
  * With intercepting routes + preloader:
  * ```tsx
- * <CurtainProvider config={motionConfig} extras={<><Preloader />{modal}</>}>
+ * <CurtainProvider config={curtainConfig} extras={<><Preloader />{modal}</>}>
  *   {children}
  * </CurtainProvider>
  * ```
@@ -54,12 +54,12 @@ export const CurtainProvider: FC<CurtainProviderProps> = ({
   children,
   extras,
 }) => {
-  const resolvedConfig = defineMotionConfig(config)
+  const resolvedConfig = defineCurtainConfig(config)
 
   return (
-    <MotionContextProvider config={resolvedConfig}>
+    <CurtainContextProvider config={resolvedConfig}>
       <PageTransition>{children}</PageTransition>
       {extras}
-    </MotionContextProvider>
+    </CurtainContextProvider>
   )
 }

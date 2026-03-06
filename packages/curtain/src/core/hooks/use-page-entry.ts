@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import type { AnimationFn, FreeAnimationFn, TimelineAnimationFn } from "../types"
-import { useMotionContext } from "../context"
+import { useCurtainContext } from "../context"
 
 /**
  * Register entry animations for the current page.
@@ -25,7 +25,7 @@ import { useMotionContext } from "../context"
  * ```
  */
 export function usePageEntry(fn: AnimationFn) {
-  const { setEntryAnimations } = useMotionContext()
+  const { setEntryAnimations } = useCurtainContext()
   // Keep a ref so the effect doesn't need fn in its deps but always calls
   // the latest version.
   const fnRef = useRef<AnimationFn>(fn)

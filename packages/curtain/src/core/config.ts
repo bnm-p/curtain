@@ -1,9 +1,9 @@
 import { gsapAdapter } from "../adapters/gsap"
-import type { MotionConfig } from "./types"
+import type { CurtainConfig } from "./types"
 
-export type ResolvedMotionConfig = Required<MotionConfig>
+export type ResolvedCurtainConfig = Required<CurtainConfig>
 
-export function defineMotionConfig(config: MotionConfig): ResolvedMotionConfig {
+export function defineCurtainConfig(config: CurtainConfig): ResolvedCurtainConfig {
   return {
     adapter: gsapAdapter(),
     selector: ".page-content",

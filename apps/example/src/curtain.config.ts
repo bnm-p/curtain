@@ -1,10 +1,10 @@
 "use client";
 
 import { gsap } from "@/lib/gsap";
-import { defaultTransition, defineMotionConfig } from "@bnm/curtain";
+import { defaultTransition, defineCurtainConfig } from "@bnm/curtain"
 
 /**
- * Your motion config. Edit this file to customise transitions, namespaces,
+ * Your curtain config. Edit this file to customise transitions, namespaces,
  * intercepting routes, and timing.
  *
  * The `default` transition is used for all route pairs unless overridden.
@@ -12,7 +12,7 @@ import { defaultTransition, defineMotionConfig } from "@bnm/curtain";
  *
  * Minimal setup — works out of the box:
  */
-export const motionConfig = defineMotionConfig({
+export const curtainConfig = defineCurtainConfig({
 	default: defaultTransition,
 
 	// Map route paths to namespace strings.

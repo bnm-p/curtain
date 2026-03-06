@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import type { AnimationFn, FreeAnimationFn, TimelineAnimationFn } from "../types"
-import { useMotionContext } from "../context"
+import { useCurtainContext } from "../context"
 
 /**
  * Register exit animations for the current page's elements.
@@ -28,7 +28,7 @@ import { useMotionContext } from "../context"
  * while the transition exit animation runs on the ghost.
  */
 export function usePageLeave(fn: AnimationFn) {
-  const { setLeaveAnimations } = useMotionContext()
+  const { setLeaveAnimations } = useCurtainContext()
   const fnRef = useRef<AnimationFn>(fn)
   fnRef.current = fn
 

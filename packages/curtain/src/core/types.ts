@@ -35,10 +35,10 @@ export interface AnimationTween {
  *
  * @example
  * // curtain.config.ts
- * import { defineMotionConfig } from "@bnm/curtain"
+ * import { defineCurtainConfig } from "@bnm/curtain"
  * import { myAdapter } from "./my-adapter"
  *
- * export const motionConfig = defineMotionConfig({
+ * export const curtainConfig = defineCurtainConfig({
  *   adapter: myAdapter(),
  *   default: myTransition,
  * })
@@ -77,7 +77,7 @@ export interface TransitionDef {
   entry(tl: AnimationTimeline, content: HTMLElement): void
 }
 
-export interface MotionConfig {
+export interface CurtainConfig {
   /** Default transition used for all route pairs */
   default: TransitionDef
   /**
@@ -106,3 +106,4 @@ export interface MotionConfig {
    */
   transitions?: Record<string, TransitionDef>
 }
+

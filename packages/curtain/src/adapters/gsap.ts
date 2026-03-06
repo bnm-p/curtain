@@ -44,7 +44,7 @@ const wrapTimeline = (raw: gsap.core.Timeline): GsapTimelineInternal => {
 }
 
 /**
- * Built-in GSAP adapter. This is the default adapter used by defineMotionConfig.
+ * Built-in GSAP adapter. This is the default adapter used by defineCurtainConfig.
  *
  * Pass a custom gsap instance if you register premium plugins in a central
  * setup file:
@@ -52,7 +52,7 @@ const wrapTimeline = (raw: gsap.core.Timeline): GsapTimelineInternal => {
  * import { gsap } from "@/lib/gsap" // your plugin-registering file
  * import { gsapAdapter } from "@bnm/curtain"
  *
- * defineMotionConfig({ adapter: gsapAdapter(gsap), ... })
+ * defineCurtainConfig({ adapter: gsapAdapter(gsap), ... })
  * ```
  */
 export const gsapAdapter = (instance: typeof gsap = gsap): AnimationAdapter => ({

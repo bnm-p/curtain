@@ -3,12 +3,12 @@
 import { usePathname, useRouter } from "next/navigation"
 import { type FC, type PropsWithChildren, useEffect, useLayoutEffect, useRef } from "react"
 import type { AnimationFn, AnimationTween, FreeAnimationFn, TimelineAnimationFn, TransitionDef } from "./types"
-import { useMotionContext } from "./context"
+import { useCurtainContext } from "./context"
 
 export const PageTransition: FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter()
   const pathname = usePathname()
-  const { config, getEntryAnimations, getLeaveAnimations, onPreloaderReady } = useMotionContext()
+  const { config, getEntryAnimations, getLeaveAnimations, onPreloaderReady } = useCurtainContext()
 
   const {
     adapter,

@@ -7,11 +7,11 @@ import {
   useContext,
   useRef,
 } from "react"
-import type { AnimationFn, MotionConfig } from "./types"
-import type { ResolvedMotionConfig } from "./config"
+import type { AnimationFn, CurtainConfig } from "./types"
+import type { ResolvedCurtainConfig } from "./config"
 
-interface MotionContextType {
-  config: ResolvedMotionConfig
+interface CurtainContextType {
+  config: ResolvedCurtainConfig
   setEntryAnimations: (fn: AnimationFn) => void
   getEntryAnimations: () => AnimationFn | null
   setLeaveAnimations: (fn: AnimationFn | null) => void
@@ -21,13 +21,13 @@ interface MotionContextType {
   onPreloaderReady: (cb: () => void) => void
 }
 
-const MotionContext = createContext<MotionContextType | undefined>(undefined)
+const CurtainContext = createContext<CurtainContextType | undefined>(undefined)
 
-interface MotionContextProviderProps extends PropsWithChildren {
-  config: ResolvedMotionConfig
+interface CurtainContextProviderProps extends PropsWithChildren {
+  config: ResolvedCurtainConfig
 }
 
-export const MotionContextProvider: FC<MotionContextProviderProps> = ({
+export const CurtainContextProvider: FC<CurtainContextProviderProps> = ({
   config,
   children,
 }) => {
@@ -40,7 +40,7 @@ export const MotionContextProvider: FC<MotionContextProviderProps> = ({
   const preloaderQueue = useRef<Array<() => void>>([])
 
   return (
-    <MotionContext.Provider
+    <CurtainContext.Provider
       value={{
         config,
         setEntryAnimations: (fn) => {
@@ -69,14 +69,14 @@ export const MotionContextProvider: FC<MotionContextProviderProps> = ({
       }}
     >
       {children}
-    </MotionContext.Provider>
+    </CurtainContext.Provider>
   )
 }
 
-export const useMotionContext = (): MotionContextType => {
-  const ctx = useContext(MotionContext)
+export const useCurtainContext = (): CurtainContextType => {
+  const ctx = useContext(CurtainContext)
   if (!ctx) {
-    throw new Error("useMotionContext must be used within <CurtainProvider>")
+    throw new Error("useCurtainContext must be used within <CurtainProvider>")
   }
   return ctx
 }

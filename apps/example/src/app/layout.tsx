@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { CurtainProvider } from "@bnm/curtain";
 import { Preloader } from "@/components/preloader";
-import { motionConfig } from "@/curtain.config";
+import { curtainConfig } from "@/curtain.config";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-foreground`}
 			>
-				<CurtainProvider config={motionConfig} extras={<Preloader />}>
+				<CurtainProvider config={curtainConfig} extras={<Preloader />}>
 					<header className="fixed inset-x-0 pt-5 flex justify-center gap-x-2 z-50">
 						<Link href={"/"}>Home</Link>
 						<Link href={"/about"}>About</Link>

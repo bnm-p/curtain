@@ -1,6 +1,6 @@
 "use client"
 
-import { useMotionContext } from "../core/context"
+import { useCurtainContext } from "../core/context"
 
 /**
  * Hook for building a custom preloader. Call this inside your preloader
@@ -19,7 +19,7 @@ import { useMotionContext } from "../core/context"
  * }
  */
 export const usePreloader = () => {
-  const { registerPreloader, notifyPreloaderDone } = useMotionContext()
+  const { registerPreloader, notifyPreloaderDone } = useCurtainContext()
 
   // Must run synchronously before any effects so that onPreloaderReady in
   // PageTransition doesn't fire before the preloader is ready.
