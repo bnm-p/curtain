@@ -4,6 +4,7 @@
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "build": "bun run --filter './packages/*' build",
+    "build:docs": "bun run --filter './apps/docs' build",
     "dev": "bun run --filter './packages/curtain' dev"
   }
 }
