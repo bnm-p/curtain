@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install and configure @bnm/curtain in your Next.js app.
+description: Install and set up @bnm/curtain in your Next.js App Router project.
 ---
 
 ## Installation
@@ -9,6 +9,76 @@ description: Install and configure @bnm/curtain in your Next.js app.
 npm install @bnm/curtain gsap
 ```
 
+`gsap` is a peer dependency. The built-in adapter uses it under the hood for all transition and page animations.
+
+---
+
 ## Setup
 
-Add `CurtainProvider` to your root layout and create a `curtain.config.ts`.
+There are three things to wire up: the config file, the provider in your root layout, and the content class on your pages.
+
+### 1. Create curtain.config.ts
+
+Create `src/curtain.config.ts` (or anywhere you prefer). This is where all your transition settings live.
+
+```ts title="src/curtain.config.ts"
+"use client"
+
+import { defaultTransition, defineCurtainConfig } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: defaultTransition,
+})
+```
+
+### 2. Add CurtainProvider to your root layout
+
+```tsx title="app/layout.tsx"
+import { CurtainProvider } from "@bnm/curtain"
+import { curtainConfig } from "@/curtain.config"
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <CurtainProvider config={curtainConfig}>
+          {children}
+        </CurtainProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+### 3. Mark your page content element
+
+The transition system needs to know which element wraps your page content. By default it looks for `.page-content`. Add that class to the element wrapping `{children}` in your layout, or to the root element of each page.
+
+```tsx title="app/layout.tsx"
+<CurtainProvider config={curtainConfig}>
+  <main className="page-content">{children}</main>
+</CurtainProvider>
+```
+
+That's the full setup. Navigate between pages and you'll see the default clip-reveal transition.
+
+---
+
+## How it works
+
+When a navigation starts, `CurtainProvider` intercepts the route change. It:
+
+1. Takes a snapshot clone of the leaving page
+2. Runs the **exit** animation on the clone
+3. Swaps in the incoming page (hidden behind `setInitialState`)
+4. Runs the **entry** animation to reveal it
+
+Page-level animations registered with `usePageEntry` and `usePageLeave` are coordinated with the transition timeline — you don't need to manage timing yourself.
+
+---
+
+## Next steps
+
+- Configure [namespaces and per-route transitions](/docs/configuration)
+- Add [page entry animations](/docs/hooks/use-page-entry)
+- Build a [preloader](/docs/hooks/use-preloader)

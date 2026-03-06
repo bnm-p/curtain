@@ -1,8 +1,111 @@
 ---
 title: Adapters
-description: Swap out GSAP for any animation library.
+description: Use the built-in GSAP adapter or swap it out for any animation library.
 ---
 
-## Built-in GSAP Adapter
+All animations in `@bnm/curtain` — transitions, timeline sequencing, and property setting — go through an `AnimationAdapter`. This means the core system doesn't depend on GSAP directly. You can swap it out.
 
-The default adapter. No setup required.
+The default adapter is `gsapAdapter()`, used automatically when you don't specify one.
+
+---
+
+## Built-in GSAP adapter
+
+No setup required for basic usage. GSAP is resolved automatically.
+
+```ts title="src/curtain.config.ts"
+import { defineCurtainConfig, defaultTransition } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: defaultTransition,
+  // adapter: gsapAdapter() — this is the default, no need to set it
+})
+```
+
+### Passing a custom GSAP instance
+
+If you register GSAP plugins (ScrollTrigger, SplitText, etc.) in a central file, pass that instance to the adapter so it uses the same registered context.
+
+```ts title="src/lib/gsap.ts"
+"use client"
+
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { SplitText } from "gsap/SplitText"
+
+gsap.registerPlugin(ScrollTrigger, SplitText)
+
+export { gsap, ScrollTrigger, SplitText }
+```
+
+```ts title="src/curtain.config.ts"
+"use client"
+
+import { gsap } from "@/lib/gsap"
+import { defineCurtainConfig, gsapAdapter, defaultTransition } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: defaultTransition,
+  adapter: gsapAdapter(gsap),
+})
+```
+
+---
+
+## Custom adapters
+
+To use a different animation library, implement the `AnimationAdapter` interface and pass it to `defineCurtainConfig`.
+
+```ts
+import type { AnimationAdapter, AnimationTimeline } from "@bnm/curtain"
+
+const myAdapter = (): AnimationAdapter => ({
+  set(targets, vars) {
+    // instantly apply properties to targets
+  },
+
+  timeline(): AnimationTimeline {
+    // return a wrapped AnimationTimeline
+  },
+
+  killTweensOf(targets) {
+    // stop all running animations on targets
+  },
+
+  scope(fn, context) {
+    // run fn with CSS selectors scoped to context element
+    // if your library doesn't support scoping, just call fn()
+    fn()
+  },
+})
+```
+
+### AnimationTimeline interface
+
+Your timeline wrapper must implement these methods:
+
+```ts
+interface AnimationTimeline {
+  to(targets, vars, position?): this
+  from(targets, vars, position?): this
+  add(fn: () => void, position?): this
+  nest(child: AnimationTimeline, position?): this
+  call(fn, params?, position?): this
+  kill(): void
+}
+```
+
+`nest()` is used to add sub-timelines (e.g. page-level animations) into the main transition timeline. If your library doesn't support nested timelines, you can use `add()` with a callback instead.
+
+### AnimationTween interface
+
+Exit transitions must return an `AnimationTween`:
+
+```ts
+interface AnimationTween {
+  onComplete(fn: () => void): this
+  kill(): void
+}
+```
+
+This minimal interface is all the orchestrator needs — completion callback and cancellation.

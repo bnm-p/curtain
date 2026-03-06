@@ -1,14 +1,100 @@
 ---
 title: Custom Transitions
-description: Write your own TransitionDef.
+description: Write your own TransitionDef to fully control how pages enter and leave.
 ---
 
-## TransitionDef interface
+A transition is a plain object that implements the `TransitionDef` interface. Three methods, each responsible for one phase of the handoff.
 
 ```ts
-interface TransitionDef {
-  setInitialState(content: HTMLElement): void
-  exit(content: HTMLElement): AnimationTween
-  entry(tl: AnimationTimeline, content: HTMLElement): void
+import type { TransitionDef, AnimationTimeline, AnimationTween } from "@bnm/curtain"
+
+const myTransition: TransitionDef = {
+  setInitialState(content: HTMLElement) {
+    // Called synchronously before the first paint.
+    // Hide the incoming page however you like.
+  },
+
+  exit(content: HTMLElement): AnimationTween {
+    // Animate the leaving page out.
+    // Must return an AnimationTween ({ onComplete, kill }).
+  },
+
+  entry(tl: AnimationTimeline, content: HTMLElement) {
+    // Animate the incoming page in.
+    // Add tweens to `tl` — they run coordinated with page-level animations.
+  },
 }
 ```
+
+---
+
+## Example — slide from right
+
+```ts
+import { gsap } from "gsap"
+import type { TransitionDef, AnimationTimeline, AnimationTween } from "@bnm/curtain"
+
+export const slideTransition: TransitionDef = {
+  setInitialState(content) {
+    gsap.set(content, { x: "100%", opacity: 0 })
+  },
+
+  exit(content): AnimationTween {
+    const tween = gsap.to(content, {
+      x: "-8%",
+      opacity: 0,
+      duration: 0.7,
+      ease: "expo.inOut",
+    })
+    return {
+      onComplete(fn) { tween.eventCallback("onComplete", fn); return this },
+      kill() { tween.kill() },
+    }
+  },
+
+  entry(tl, content) {
+    gsap.set(content, { x: "100%", opacity: 0 })
+    tl.to(content, {
+      x: "0%",
+      opacity: 1,
+      duration: 0.7,
+      ease: "expo.inOut",
+      onComplete: () => gsap.set(content, { clearProps: "x,opacity" }),
+    })
+  },
+}
+```
+
+---
+
+## Using it
+
+```ts title="src/curtain.config.ts"
+import { slideTransition } from "@/transitions/slide"
+import { defineCurtainConfig, fadeTransition } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: slideTransition,
+
+  namespaces: {
+    "/": "home",
+    "/about": "about",
+  },
+
+  transitions: {
+    "about -> home": fadeTransition, // override for one specific direction
+  },
+})
+```
+
+---
+
+## Tips
+
+**Always reset in `entry`.** Call `gsap.set(content, { ... })` at the top of `entry` to ensure the animation starts from the correct state — especially important under React Strict Mode where effects run twice.
+
+**Clear props on complete.** After the entry animation finishes, clear any inline styles you set with `gsap.set(content, { clearProps: "..." })`. This prevents stale styles from interfering with the page layout.
+
+**`exit` runs on a clone.** The `content` passed to `exit` is a ghost clone of the leaving page — not the live DOM node. You can animate it freely without affecting the incoming page.
+
+**`entry` receives the live node.** The `content` passed to `entry` is the real mounted DOM element of the incoming page.

@@ -1,10 +1,127 @@
 ---
 title: usePreloader
-description: Build a custom preloader that blocks page entry animations.
+description: Build a custom preloader that blocks page entry animations until you signal done.
 ---
 
-## Usage
+`usePreloader` gives you a single `notifyDone` function. Call it when your preloader animation is finished — the page entry animations won't fire until you do.
 
-```ts
-const { notifyDone } = usePreloader()
+You build the preloader UI yourself. `@bnm/curtain` only handles the timing contract.
+
+---
+
+## Basic usage
+
+```tsx
+"use client"
+
+import { usePreloader } from "@bnm/curtain"
+import { useEffect } from "react"
+
+export const Preloader = () => {
+  const { notifyDone } = usePreloader()
+
+  useEffect(() => {
+    // Wait a tick, then signal done
+    const timer = setTimeout(() => notifyDone(), 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return <div className="fixed inset-0 z-50 bg-black" />
+}
 ```
+
+---
+
+## Full example — clip-path wipe
+
+This is the pattern from the example app: the preloader holds for a moment, signals `notifyDone()` so page animations can prepare, then wipes itself off the screen.
+
+```tsx title="src/components/preloader.tsx"
+"use client"
+
+import { usePreloader } from "@bnm/curtain"
+import { gsap } from "gsap"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
+
+export const Preloader = () => {
+  const { notifyDone } = usePreloader()
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const [mounted, setMounted] = useState(false)
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    if (!mounted || !overlayRef.current) return
+
+    const tl = gsap.timeline()
+
+    // Hold for 0.5s, then notify curtain that the preloader is done.
+    // Page entry animations will fire after this point.
+    tl.to({}, { duration: 0.5 })
+    tl.add(() => {
+      notifyDone()
+
+      if (overlayRef.current) {
+        gsap.fromTo(
+          overlayRef.current,
+          { clipPath: "inset(0 0 0% 0)" },
+          {
+            clipPath: "inset(0 0 100% 0)",
+            duration: 1.2,
+            ease: "expo.inOut",
+            onComplete: () => setVisible(false),
+          },
+        )
+      }
+    })
+
+    return () => { tl.kill() }
+  }, [mounted])
+
+  // Render a non-portal version before hydration to avoid flash
+  if (!mounted) {
+    return <div className="fixed inset-0 z-50 bg-black" />
+  }
+
+  if (!visible) return null
+
+  return createPortal(
+    <div ref={overlayRef} className="fixed inset-0 z-50 bg-black" />,
+    document.body,
+  )
+}
+```
+
+---
+
+## Wiring it up
+
+Pass your preloader to `CurtainProvider` via the `extras` prop. This renders it inside the curtain context but outside the `PageTransition` wrapper.
+
+```tsx title="app/layout.tsx"
+import { CurtainProvider } from "@bnm/curtain"
+import { curtainConfig } from "@/curtain.config"
+import { Preloader } from "@/components/preloader"
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <CurtainProvider config={curtainConfig} extras={<Preloader />}>
+          {children}
+        </CurtainProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+---
+
+## Notes
+
+- `notifyDone()` is safe to call multiple times — only the first call has any effect.
+- `usePreloader` registers itself synchronously (before any effects), so the orchestrator knows a preloader exists before the first paint. This prevents the page from briefly revealing before the preloader is ready.
+- The preloader only runs on the initial page load, not on subsequent navigations.

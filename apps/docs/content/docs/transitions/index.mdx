@@ -1,12 +1,59 @@
 ---
 title: Built-in Transitions
-description: Transitions included with @bnm/curtain.
+description: The two transitions included with @bnm/curtain.
+---
+
+Both transitions are importable from `@bnm/curtain` and can be used directly in `defineCurtainConfig` or as a starting point for your own.
+
 ---
 
 ## defaultTransition
 
-Clip from top reveal with scale-down exit.
+A clip-path reveal with a scale-down exit. This is the recommended starting point for most projects.
+
+**Exit:** The leaving page shrinks, drifts up, and fades out.
+
+**Entry:** The incoming page clips in from the top edge downward.
+
+```ts
+import { defaultTransition } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: defaultTransition,
+})
+```
+
+Timing: `1.2s` duration, `expo.inOut` ease.
+
+---
 
 ## fadeTransition
 
-Simple opacity fade in/out.
+A simple cross-fade. The leaving page fades out, then the incoming page fades in.
+
+```ts
+import { fadeTransition } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: fadeTransition,
+})
+```
+
+Or use it as an override for specific route pairs:
+
+```ts
+export const curtainConfig = defineCurtainConfig({
+  default: defaultTransition,
+
+  namespaces: {
+    "/": "home",
+    "/contact": "contact",
+  },
+
+  transitions: {
+    "* -> contact": fadeTransition,
+  },
+})
+```
+
+Timing: `0.5s` duration, `power2.inOut` ease.

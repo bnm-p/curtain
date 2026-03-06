@@ -1,12 +1,78 @@
 ---
 title: usePageEntry
-description: Register entry animations for the current page.
+description: Register entry animations for the current page, coordinated with the transition timeline.
 ---
 
-## Usage
+`usePageEntry` lets you define animations that run when a page comes in. The timing is handled automatically — your animations fire after the page has been revealed by the transition, with a configurable delay (`pageAnimDelay` in your config).
 
-```ts
-usePageEntry((tl) => {
-  tl.from(".hero", { y: 40, opacity: 0, duration: 0.6 })
-})
+Call it in any Client Component on the page.
+
+---
+
+## Timeline mode
+
+Pass a function that receives the entry timeline `tl`. Tweens added to `tl` are sequenced together and run in sync with the transition.
+
+```tsx title="app/about/page.tsx"
+"use client"
+
+import { usePageEntry } from "@bnm/curtain"
+
+export default function AboutPage() {
+  usePageEntry((tl) => {
+    tl.from(".hero-title", { y: 60, opacity: 0, duration: 0.7, ease: "expo.out" })
+    tl.from(".hero-sub", { opacity: 0, duration: 0.5 }, "<0.15")
+    tl.from(".hero-cta", { y: 20, opacity: 0, duration: 0.4 }, "<0.1")
+  })
+
+  return (
+    <div>
+      <h1 className="hero-title">About</h1>
+      <p className="hero-sub">We build things.</p>
+      <a className="hero-cta" href="/work">See our work</a>
+    </div>
+  )
+}
 ```
+
+Position strings like `"<0.15"` follow GSAP's timeline syntax — `<` means relative to the previous tween's start.
+
+---
+
+## Free mode
+
+Pass a zero-argument function to run outside the entry timeline. Useful when you need full manual control — your own GSAP timeline, a third-party animation, etc.
+
+```tsx
+"use client"
+
+import { usePageEntry } from "@bnm/curtain"
+import { gsap } from "@/lib/gsap"
+import { SplitText } from "gsap/SplitText"
+
+export default function HomePage() {
+  const titleRef = useRef<HTMLHeadingElement>(null)
+
+  usePageEntry(() => {
+    if (!titleRef.current) return
+    const split = new SplitText(titleRef.current, { type: "chars" })
+    gsap.from(split.chars, {
+      y: 80,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.03,
+      ease: "expo.out",
+    })
+  })
+
+  return <h1 ref={titleRef}>Hello.</h1>
+}
+```
+
+---
+
+## Notes
+
+- `usePageEntry` must be called from a `"use client"` component.
+- The callback is stable across re-renders — you don't need to worry about wrapping it in `useCallback`.
+- If a page doesn't call `usePageEntry`, no page-level entry animation runs. The transition still plays normally.

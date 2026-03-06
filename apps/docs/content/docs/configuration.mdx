@@ -1,8 +1,143 @@
 ---
 title: Configuration
-description: Configure @bnm/curtain via curtain.config.ts.
+description: All options available in defineCurtainConfig.
 ---
 
-## curtain.config.ts
+`defineCurtainConfig` accepts a `CurtainConfig` object and fills in sensible defaults for everything you don't specify. The only required field is `default`.
 
-The config file lives at `src/curtain.config.ts` in your app.
+```ts title="src/curtain.config.ts"
+"use client"
+
+import { defineCurtainConfig, defaultTransition, fadeTransition } from "@bnm/curtain"
+
+export const curtainConfig = defineCurtainConfig({
+  default: defaultTransition,
+
+  namespaces: {
+    "/": "home",
+    "/about": "about",
+    "/work": "work",
+  },
+
+  transitions: {
+    "home -> work": fadeTransition,
+    "* -> about": fadeTransition,
+  },
+})
+```
+
+---
+
+## Options
+
+### `default` (required)
+
+The transition used for all route pairs that don't have an explicit override.
+
+```ts
+default: defaultTransition
+```
+
+See [Built-in Transitions](/docs/transitions) or [Custom Transitions](/docs/transitions/custom).
+
+---
+
+### `namespaces`
+
+Maps route paths to namespace strings. Namespaces are used to look up per-pair transition overrides in `transitions`.
+
+```ts
+namespaces: {
+  "/": "home",
+  "/about": "about",
+  "/work": "work",
+}
+```
+
+Routes not listed here fall back to the `"default"` namespace. If `namespaces` is empty, all transitions use `default`.
+
+---
+
+### `transitions`
+
+Per-pair transition overrides. The key format is `"fromNamespace -> toNamespace"`. Use `*` as a wildcard for the source.
+
+```ts
+transitions: {
+  "home -> work": slideUpTransition,
+  "* -> about": fadeTransition,
+}
+```
+
+When the user navigates from `/` (namespace `"home"`) to `/work` (namespace `"work"`), `slideUpTransition` is used instead of the default.
+
+---
+
+### `adapter`
+
+The animation library adapter. Defaults to the built-in `gsapAdapter()`. Swap this to use a different animation library.
+
+```ts
+import { gsapAdapter } from "@bnm/curtain"
+import { gsap } from "@/lib/gsap" // your central GSAP setup file
+
+adapter: gsapAdapter(gsap)
+```
+
+See [Adapters](/docs/adapters) for full details.
+
+---
+
+### `selector`
+
+CSS selector for the page content element. The transition system queries this to find the element to animate.
+
+```ts
+selector: ".page-content" // default
+```
+
+Change this if you use a different class name on your content wrapper.
+
+---
+
+### `wrapperAttr`
+
+Attribute selector for an inner wrapper inside the content element. Used for preloader synchronization — the inner wrapper's opacity is held at 0 until the preloader signals done.
+
+```ts
+wrapperAttr: "[data-page-wrapper]" // default
+```
+
+If you're not using a preloader, this has no visible effect.
+
+---
+
+### `lockDuration`
+
+How long navigations are locked after one starts, in milliseconds. Prevents queuing multiple transitions if the user clicks rapidly.
+
+```ts
+lockDuration: 800 // default
+```
+
+Set this roughly equal to your longest transition duration.
+
+---
+
+### `pageAnimDelay`
+
+Delay in seconds before page-level entry animations (registered with `usePageEntry`) fire after the clip reveal starts.
+
+```ts
+pageAnimDelay: 0.4 // default
+```
+
+---
+
+### `intercept`
+
+Route paths that use Next.js intercepting (parallel) routes. Transitions are skipped when navigating to or from these paths — the parallel route handles its own appearance.
+
+```ts
+intercept: ["/modal", "/photo/[id]"]
+```

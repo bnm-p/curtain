@@ -1,12 +1,55 @@
 ---
 title: usePageLeave
-description: Register exit animations for the current page.
+description: Register exit animations for elements on the current page.
 ---
 
-## Usage
+`usePageLeave` lets you animate elements out when the user navigates away. It runs on a ghost clone of the leaving page — scoped so selectors only match elements within that page, not the incoming one.
 
-```ts
-usePageLeave((tl) => {
-  tl.to(".hero", { y: -40, opacity: 0, duration: 0.5 })
+This hook is optional. If a page doesn't call it, the transition's default exit animation still runs on the page content.
+
+---
+
+## Timeline mode
+
+Pass a function that receives the leave timeline `tl`. It runs in parallel with the transition's exit animation.
+
+```tsx title="app/home/page.tsx"
+"use client"
+
+import { usePageLeave } from "@bnm/curtain"
+
+export default function HomePage() {
+  usePageLeave((tl) => {
+    tl.to(".hero-title", { y: -40, opacity: 0, duration: 0.5, ease: "expo.in" })
+    tl.to(".hero-image", { scale: 1.05, opacity: 0, duration: 0.6 }, "<")
+  })
+
+  return (
+    <div>
+      <h1 className="hero-title">Home</h1>
+      <img className="hero-image" src="/hero.jpg" alt="" />
+    </div>
+  )
+}
+```
+
+---
+
+## Free mode
+
+Pass a zero-argument function for full manual control.
+
+```tsx
+usePageLeave(() => {
+  gsap.to(".panel", { x: "-100%", duration: 0.5, stagger: 0.05 })
 })
 ```
+
+---
+
+## Notes
+
+- Exit animations run on a **clone** of the leaving page, not the live DOM. This means the incoming page can mount and start its own setup while the exit plays.
+- Selectors are scoped to the clone — `.hero-title` will match only within the leaving page, not in the incoming one.
+- The cleanup on unmount is handled automatically. Stale leave animations from a previous page won't run on the next one.
+- `usePageLeave` must be called from a `"use client"` component.
