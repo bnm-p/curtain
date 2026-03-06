@@ -1,11 +1,7 @@
 "use client";
 
-import { gsap } from "gsap";
-// If you use GSAP premium plugins (e.g. SplitText), import from your custom
-// gsap setup file instead: import { gsap } from '@/lib/gsap'
-
-import { defaultTransition } from "./transitions/default";
-import { defineMotionConfig } from "./types";
+import { gsap } from "@/lib/gsap";
+import { defaultTransition, defineMotionConfig } from "@bnm/curtain";
 
 /**
  * Your motion config. Edit this file to customise transitions, namespaces,

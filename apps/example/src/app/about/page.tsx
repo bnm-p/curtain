@@ -1,6 +1,6 @@
 "use client";
 
-import { usePageEntry, usePageLeave } from "@/motion";
+import { usePageEntry, usePageLeave } from "@bnm/curtain";
 import type { NextPage } from "next";
 
 const AboutPage: NextPage = () => {

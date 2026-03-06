@@ -1,8 +1,8 @@
 import "./globals.css";
 
-import { ViewMotionProvider } from "@/motion";
-import { motionConfig } from "@/motion/config";
-import { Preloader } from "@/motion/preloader";
+import { ViewMotionProvider } from "@bnm/curtain";
+import { Preloader } from "@/components/preloader";
+import { motionConfig } from "@/curtain.config";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
